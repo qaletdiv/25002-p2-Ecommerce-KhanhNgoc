@@ -1,0 +1,151 @@
+.filters {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 30px;
+    background-color: #ffecec;
+    border-bottom: 1px solid #ffd6d6;
+    flex-wrap: wrap;
+  }
+  
+  .filters select {
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 1px solid #fcbaba;
+    background-color: #fff8f8;
+    color: #444;
+    font-weight: 500;
+    font-family: "Poppins", sans-serif;
+    transition: all 0.2s ease-in-out;
+    min-width: 120px;
+  }
+  
+  .filters select:hover {
+    background-color: #ffe2e2;
+    border-color: #ffb3b3;
+  }
+  
+  .product-grid {
+    margin-top: 20px;
+    padding: 30px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(240px, 1fr));
+    gap: 24px;
+  }
+  
+  .product-card {
+    background-color: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(252, 186, 186, 0.2);
+    padding: 14px;
+    text-align: center;
+    transition: transform 0.2s ease, box-shadow 0.3s ease;
+  }
+  
+  .product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(252, 186, 186, 0.3);
+  }
+  
+  .product-card img {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    background-color: #fff8f8;
+  }
+  
+  .product-card h3 {
+    margin: 8px 0 4px;
+    font-size: 1.05rem;
+    color: #444;
+  }
+  
+  .product-card p.price {
+    color: #ff7b7b;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  
+  .pagination {
+    text-align: center;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  
+  .pagination button {
+    background-color: #fcbaba;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    color: white;
+    font-weight: 500;
+    transition: all 0.2s ease-in-out;
+  }
+  
+  .pagination button:hover {
+    background-color: #ff9ca6;
+    transform: scale(1.05);
+  }
+  
+  .pagination span {
+    color: #444;
+    font-weight: 500;
+  }
+
+  @media screen and (max-width: 800px) {
+    .filters {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 15px 20px;
+    }
+  
+    .product-grid {
+      grid-template-columns: repeat(2, 1fr);
+      padding: 20px;
+      gap: 18px;
+    }
+  
+    .pagination button {
+      padding: 6px 12px;
+      margin: 0 6px;
+    }
+  }
+  
+  @media screen and (max-width: 600px) {
+    .filters {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 8px;
+      padding: 10px 15px;
+    }
+  
+    .filters select {
+      width: 100%;
+    }
+  
+    .product-grid {
+      grid-template-columns: 1fr;
+      padding: 15px;
+      gap: 12px;
+    }
+  
+    .pagination {
+      flex-direction: column;
+      gap: 4px;
+    }
+  
+    .pagination button {
+      width: 100%;
+      padding: 6px 0;
+      margin: 4px 0;
+    }
+  }
+  

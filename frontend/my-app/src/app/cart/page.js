@@ -1,127 +1,91 @@
 'use client';
-
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import "./cart.css";
 
 export default function CartPage() {
   const router = useRouter();
   const [cart, setCart] = useState([]);
   const [products, setProducts] = useState([]);
-  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
 
+  const user = JSON.parse(localStorage.getItem("currentUser"));
+  if (!user) {
+    router.push("/account/login");
+    return null;
+  }
+  
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("currentUser"));
-    if (!user) {
-      alert("Please log in to view your cart.");
-      router.push("/login");
-      return;
-    }
-
-    async function fetchCart() {
+    async function fetchData() {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/cart/${user.id}`);
-        const data = await res.json();
-        setCart(data.items || []);
-        setProducts(data.products || []);
+        const resCart = await fetch(`http://localhost:4000/api/cart/${user.id}`);
+        const cartData = await resCart.json();
+        setCart(cartData.items);
+
+        const resProducts = await fetch(`http://localhost:4000/api/products`);
+        const prodData = await resProducts.json();
+        setProducts(prodData.products || []);
       } catch (err) {
         console.error(err);
       } finally {
         setLoading(false);
       }
     }
+    fetchData();
+  }, [user.id]);
 
-    fetchCart();
-  }, [router]);
-
-  useEffect(() => {
-    let sum = 0;
-    cart.forEach((item) => {
-      const prod = products.find((p) => p.id === item.id);
-      if (prod) sum += prod.price * item.quantity;
+  const handleQtyChange = async (productId, quantity) => {
+    await fetch(`http://localhost:4000/api/cart/${user.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ productId, quantity }),
     });
-    setTotal(sum);
-  }, [cart, products]);
-
-  const handleQtyChange = async (id, qty) => {
-    const user = JSON.parse(localStorage.getItem("currentUser"));
-    if (!user) return;
-
-    try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/cart/${user.id}/update`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productId: id, quantity: qty }),
-      });
-
-      setCart((prev) =>
-        prev.map((item) => (item.id === id ? { ...item, quantity: qty } : item))
-      );
-    } catch (err) {
-      console.error(err);
-    }
+    setCart((prev) =>
+      prev.map((item) => (item.productId === productId ? { ...item, quantity } : item))
+    );
   };
 
-  const handleRemove = async (id) => {
-    const user = JSON.parse(localStorage.getItem("currentUser"));
-    if (!user) return;
-
-    try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/cart/${user.id}/remove`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productId: id }),
-      });
-
-      setCart((prev) => prev.filter((item) => item.id !== id));
-    } catch (err) {
-      console.error(err);
-    }
+  const handleRemove = async (productId) => {
+    await fetch(`http://localhost:4000/api/cart/${user.id}/${productId}`, {
+      method: "DELETE",
+    });
+    setCart((prev) => prev.filter((item) => item.productId !== productId));
   };
+
+  const total = cart.reduce((sum, item) => {
+    const prod = products.find((p) => p.id === item.productId);
+    return prod ? sum + prod.price * item.quantity : sum;
+  }, 0);
 
   if (loading) return <p>Loading cart...</p>;
 
   return (
-    <main className="cart-container">
-      <h1>Your Shopping Cart</h1>
-      <div className="cart-list">
-        {cart.length === 0 && <p>Your cart is empty.</p>}
-        {cart.map((item) => {
-          const prod = products.find((p) => p.id === item.id);
-          if (!prod) return null;
-          const subtotal = prod.price * item.quantity;
-          return (
-            <div className="cart-item" key={item.id}>
-              <img src={prod.image} alt={prod.name} />
-              <div className="cart-item-info">
+    <main>
+      <h1>Cart</h1>
+      {cart.length === 0 ? (
+        <p>Your cart is empty</p>
+      ) : (
+        <div>
+          {cart.map((item) => {
+            const prod = products.find((p) => p.id === item.productId);
+            if (!prod) return null;
+            return (
+              <div key={item.productId}>
                 <h3>{prod.name}</h3>
-                <p>Price: ${prod.price.toLocaleString()}</p>
-                <p>
-                  Subtotal: $<span>{subtotal.toLocaleString()}</span>
-                </p>
+                <p>Price: ${prod.price}</p>
+                <input
+                  type="number"
+                  min="1"
+                  value={item.quantity}
+                  onChange={(e) => handleQtyChange(item.productId, parseInt(e.target.value))}
+                />
+                <button onClick={() => handleRemove(item.productId)}>Remove</button>
               </div>
-              <input
-                type="number"
-                min="1"
-                value={item.quantity}
-                onChange={(e) => handleQtyChange(item.id, parseInt(e.target.value))}
-              />
-              <button onClick={() => handleRemove(item.id)}>Remove</button>
-            </div>
-          );
-        })}
-      </div>
-      <div className="cart-summary">
-        <p>Total: ${total.toLocaleString()}</p>
-        <button
-          id="checkout-btn"
-          onClick={() => router.push("/checkout")}
-          disabled={cart.length === 0}
-        >
-          Proceed to Checkout
-        </button>
-      </div>
+            );
+          })}
+          <p>Total: ${total.toFixed(2)}</p>
+          <button onClick={() => router.push("/checkout")}>Checkout</button>
+        </div>
+      )}
     </main>
   );
 }

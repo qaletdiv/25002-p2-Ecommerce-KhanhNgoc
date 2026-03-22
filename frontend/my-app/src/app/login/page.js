@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import "./login.css";
 
 export default function LoginPage() {
-  const router = useRouter();
+  const router = useRouter()
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
@@ -26,12 +26,12 @@ export default function LoginPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Login failed");
 
-      // Lưu user vào localStorage
+      
       localStorage.setItem("currentUser", JSON.stringify(data));
       localStorage.setItem("loggedIn", "true");
 
       alert(`Welcome back, ${data.name}!`);
-      router.push("/"); // redirect về homepage
+      router.push("/"); 
     } catch (err) {
       setErrorMsg(err.message);
       console.error(err);

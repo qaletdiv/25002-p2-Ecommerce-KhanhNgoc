@@ -2,20 +2,31 @@
 
 import { useEffect, useState } from "react";
 import ProductCard from "./components/ProductCard";
-import "./home.css";
 
 export default function HomePage() {
   const [products, setProducts] = useState([]);
-  useEffect(() => {
-    const fetchProducts = async () => {
-    const res = await fetch("http://localhost:4000/api/products");
+  const [search, setSearch] = useState("");
+
+  const fetchProducts = async (keyword = "") => {
+    let url = "http://localhost:4000/api/products";
+
+    if (keyword) {
+      url += `?search=${keyword}`;
+    }
+
+    const res = await fetch(url);
     const data = await res.json();
-    setProducts(data.slice(0, 6));
-    };
-    
+
+    setProducts(data.products.slice(0, 6));
+  };
+
+  useEffect(() => {
     fetchProducts();
-    }, []);
-  
+  }, []);
+
+  const handleSearch = () => {
+    fetchProducts(search);
+  };
 
   return (
     <div>
@@ -24,10 +35,28 @@ export default function HomePage() {
         <p>Discover your favorite styles in soft pastel tones 🌸</p>
       </section>
 
+      {/* SEARCH */}
+      <div className="search-bar">
+        <input
+          type="text"
+          placeholder="Search products..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") handleSearch();
+          }}
+        />
+        <button onClick={handleSearch}>Search</button>
+      </div>
+
       <div className="product-grid">
-        {products.map((p) => (
-          <ProductCard key={p.id} product={p} />
-        ))}
+        {products.length === 0 ? (
+          <p>No products found.</p>
+        ) : (
+          products.map((p) => (
+            <ProductCard key={p.id} product={p} />
+          ))
+        )}
       </div>
     </div>
   );

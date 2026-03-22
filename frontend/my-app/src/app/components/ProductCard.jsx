@@ -1,19 +1,31 @@
 'use client';
-export default function ProductCard({ product, onAddToCart }) {
-  const handleClick = () => {
-    if (!onAddToCart) {
-      alert("Please log in to add items to your cart.");
-    } else {
-      onAddToCart(product);
-    }
+
+import { useRouter } from "next/navigation";
+
+export default function ProductCard({ product }) {
+  const router = useRouter();
+
+  const handleView = () => {
+    router.push(`/products/${product.id}`);
   };
 
   return (
     <div className="product-card">
-      <img src={product.image} alt={product.name} />
-      <h3>{product.name}</h3>
+      <img 
+        src={product.image} 
+        alt={product.name} 
+        onClick={handleView}
+        style={{ cursor: "pointer" }}
+      />
+
+      <h3 onClick={handleView} style={{ cursor: "pointer" }}>
+        {product.name}
+      </h3>
+
       <p className="price">${product.price.toFixed(2)}</p>
-      <button className="btn" onClick={handleClick}>Added to cart</button>
+      <button className="btn" onClick={handleView}>
+        View
+      </button>
     </div>
   );
 }

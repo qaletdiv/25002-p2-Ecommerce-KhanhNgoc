@@ -22,7 +22,11 @@ export default function ProductDetailPage() {
        
         const allRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products?category=${data.category}`);
         const allData = await allRes.json();
-        setRelated(allData.filter(p => p.id !== data.id).slice(0, 4));
+        setRelated(
+          allData.products
+            .filter(p => p.id !== data.id)
+            .slice(0, 4)
+        );;
       } catch (err) {
         console.error(err);
       }

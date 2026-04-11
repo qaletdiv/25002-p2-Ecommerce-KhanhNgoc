@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
 import ProductCard from "../components/ProductCard";
 import "./shop.css";
 
@@ -12,23 +11,46 @@ export default function ProductsPage() {
   const [sort, setSort] = useState("default");
   const [currentPage, setCurrentPage] = useState(1);
 
-
-
+  const itemsPerPage = 6;
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/products`)
       .then((res) => res.json())
-      .then((data) => setProducts(data.products));
+      .then((data) => setProducts(data.products || []));
   }, []);
-
-
 
   useEffect(() => {
     setCurrentPage(1);
   }, [category, priceRange, sort]);
 
+  const addToCart = (product) => {
+    const user = JSON.parse(localStorage.getItem("currentUser"));
 
+    if (!user) {
+      alert("Please login first");
+      return;
+    }
 
+    const key = `cart_${user.id}`;
 
+    let cart = JSON.parse(localStorage.getItem(key)) || [];
+
+    const existing = cart.find(item => item.id === product.id);
+
+    if (existing) {
+      existing.quantity += 1;
+    } else {
+      cart.push({
+        id: product.id,
+        quantity: 1
+      });
+    }
+
+    localStorage.setItem(key, JSON.stringify(cart));
+
+    alert("Added to cart!");
+  };
+
+ 
   const filteredProducts = products
     .filter((p) => (category ? p.category === category : true))
     .filter((p) => {
@@ -44,12 +66,11 @@ export default function ProductsPage() {
     });
 
 
-
-
-  const itemsPerPage = 6;
   const start = (currentPage - 1) * itemsPerPage;
   const end = start + itemsPerPage;
   const paginatedProducts = filteredProducts.slice(start, end);
+
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
 
   return (
     <div>
@@ -66,7 +87,7 @@ export default function ProductsPage() {
         <select onChange={(e) => setPriceRange(e.target.value)}>
           <option value="">All Price</option>
           <option value="0-50">Under $50</option>
-          <option value="50-100">$50 -$100</option>
+          <option value="50-100">$50 - $100</option>
           <option value="100-999">Above $100</option>
         </select>
 
@@ -78,16 +99,37 @@ export default function ProductsPage() {
         </select>
       </div>
 
+    
       <div className="product-grid">
         {paginatedProducts.map((p) => (
-          <ProductCard key={p.id} product={p} />
+          <div key={p.id} className="product-card">
+            <ProductCard product={p} />
+
+            
+          </div>
         ))}
       </div>
-
+      
       <div className="pagination">
-        <button onClick={() => setCurrentPage(1)}>1</button>
-        <button onClick={() => setCurrentPage(2)}>2</button>
+        <button
+          disabled={currentPage === 1}
+          onClick={() => setCurrentPage(p => p - 1)}
+        >
+          Prev
+        </button>
+
+        <span>
+          Page {currentPage} / {totalPages}
+        </span>
+
+        <button
+          disabled={currentPage === totalPages}
+          onClick={() => setCurrentPage(p => p + 1)}
+        >
+          Next
+        </button>
       </div>
+
     </div>
   );
 }

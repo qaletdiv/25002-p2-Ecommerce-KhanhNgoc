@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useRouter } from "next/navigation";
 
@@ -9,11 +9,48 @@ export default function ProductCard({ product }) {
     router.push(`/products/${product.id}`);
   };
 
+  const addToCart = () => {
+    const user = JSON.parse(localStorage.getItem("currentUser"));
+
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+
+    const key = `cart_${user.id}`;
+    const cart = JSON.parse(localStorage.getItem(key)) || [];
+
+    const productId = Number(product.id);
+
+    const existingIndex = cart.findIndex(
+      item => Number(item.id) === productId
+    );
+
+    let updatedCart;
+
+    if (existingIndex !== -1) {
+      updatedCart = cart.map((item, index) =>
+        index === existingIndex
+          ? { ...item, quantity: item.quantity + 1 }
+          : item
+      );
+    } else {
+      updatedCart = [
+        ...cart,
+        { id: productId, quantity: 1 }
+      ];
+    }
+
+    localStorage.setItem(key, JSON.stringify(updatedCart));
+
+    alert("Added to cart!");
+  };
+
   return (
     <div className="product-card">
-      <img 
-        src={product.image} 
-        alt={product.name} 
+      <img
+        src={product.image}
+        alt={product.name}
         onClick={handleView}
         style={{ cursor: "pointer" }}
       />
@@ -22,10 +59,19 @@ export default function ProductCard({ product }) {
         {product.name}
       </h3>
 
-      <p className="price">${product.price.toFixed(2)}</p>
-      <button className="btn" onClick={handleView}>
-        View
-      </button>
+      <p className="price">
+        ${Number(product.price).toFixed(2)}
+      </p>
+
+      <div className="actions">
+        <button className="btn" onClick={handleView}>
+          View
+        </button>
+
+        <button className="btn" onClick={addToCart}>
+          Add to Cart
+        </button>
+      </div>
     </div>
   );
 }

@@ -1,33 +1,105 @@
-'use client';
+"use client";
+
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+
+
 
 export default function ConfirmPage() {
-  const [order, setOrder] = useState(null);
+  const router = useRouter();
 
-  const user = JSON.parse(localStorage.getItem("currentUser"));
-  if (!user) return null;
+  const [user, setUser] = useState(null);
+  const [order, setOrder] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchOrder() {
-      const res = await fetch(`http://localhost:4000/api/orders/${user.id}`);
-      const orders = await res.json();
-      setOrder(orders[orders.length - 1] || null);
-    }
-    fetchOrder();
-  }, [user.id]);
+    const u = JSON.parse(localStorage.getItem("currentUser"));
+    const pending = JSON.parse(localStorage.getItem("pendingOrder"));
 
-  if (!order) return <p>No recent order found.</p>;
+    if (!u) {
+      router.push("/login");
+      return;
+    }
+    setUser(u);
+    setOrder(pending);
+    setLoading(false);
+  }, []);
+
+
+  const placeOrder = async () => {
+    if (!order) {
+      alert("No order found");
+      return;
+    }
+
+    try {
+      const res = await fetch("http://localhost:4000/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: user.id,        
+          items: order.items,
+          total: order.total,
+        }),
+      });
+
+      const data = await res.json();
+
+      console.log("RESPONSE:", data);
+
+      if (!res.ok) {
+        throw new Error(data.message || "Order failed");
+      }
+
+      
+      localStorage.removeItem("pendingOrder");
+      localStorage.removeItem(`cart_${user.id}`);
+
+      alert("Order placed successfully!");
+      router.push("/products");
+
+    } catch (err) {
+      console.error("ORDER ERROR:", err);
+      alert("Something went wrong");
+    }
+  };
+
+  if (loading) return <p>Loading...</p>;
+
+  if (!order) return <p>No order found</p>;
 
   return (
-    <main>
-      <h1>Order Confirmed!</h1>
-      <p>Order ID: {order.id}</p>
-      <p>Total: ${order.total}</p>
-      <ul>
-        {order.items.map(item => (
-          <li key={item.productId}>{item.name} × {item.quantity}</li>
-        ))}
-      </ul>
+    <main style={{ padding: 20 }}>
+      <h1>Confirm Order</h1>
+      <h3>User: {user?.name}</h3>
+
+      <hr />
+
+      {order.items.map((item, i) => (
+        <div key={i}>
+          <p><b>{item.name}</b></p>
+          <p>Qty: {item.qty}</p>
+          <p>Price: ${item.price}</p>
+          <hr />
+        </div>
+      ))}
+
+      <h2>Total: ${order.total}</h2>
+
+      <button
+        onClick={placeOrder}
+        style={{
+          padding: "10px 20px",
+          background: "#ff6b6b",
+          color: "white",
+          border: "none",
+          cursor: "pointer",
+        }}
+      >
+        Place Order
+      </button>
     </main>
   );
 }

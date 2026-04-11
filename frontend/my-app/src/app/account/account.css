@@ -1,0 +1,109 @@
+.account-container {
+    max-width: 1000px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: #fff8f8;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(255, 182, 193, 0.2);
+    font-family: "Poppins", sans-serif;
+  }
+  
+  .account-container h1 {
+    color: #ff6b6b;
+    margin-bottom: 30px;
+    text-align: center;
+    font-weight: 600;
+  }
+  
+  .personal-info,
+  .order-history {
+    margin-bottom: 40px;
+  }
+  
+  .personal-info h2,
+  .order-history h2 {
+    color: #ff6b6b;
+    margin-bottom: 15px;
+    font-size: 1.4rem;
+  }
+  
+  .personal-info p {
+    margin: 8px 0;
+    font-size: 1.1rem;
+    color: #444;
+  }
+  
+  .order-history table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #fff1f3;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  
+  .order-history th,
+  .order-history td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ffd6d6;
+  }
+  
+  .order-history th {
+    background-color: #ffb6c1;
+    color: white;
+    font-weight: 500;
+  }
+  
+  .order-history tbody tr:hover {
+    background-color: #ffe0e6;
+  }
+  
+  .order-history td {
+    color: #444;
+  }
+  
+  @media screen and (max-width: 800px) {
+    .account-container {
+      padding: 15px 20px;
+      max-width: 90%;
+      margin: 40px auto;
+    }
+  
+    .personal-info h2,
+    .order-history h2 {
+      font-size: 1.3rem;
+    }
+  
+    .personal-info p {
+      font-size: 1rem;
+    }
+  
+    .order-history th,
+    .order-history td {
+      padding: 10px 12px;
+    }
+  }
+  
+  @media screen and (max-width: 600px) {
+    .account-container {
+      padding: 10px 15px;
+      margin: 30px auto;
+    }
+  
+    .personal-info h2,
+    .order-history h2 {
+      font-size: 1.2rem;
+    }
+  
+    .personal-info p {
+      font-size: 0.95rem;
+    }
+  
+    .order-history table {
+      display: block;
+      width: 100%;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+  }
+  

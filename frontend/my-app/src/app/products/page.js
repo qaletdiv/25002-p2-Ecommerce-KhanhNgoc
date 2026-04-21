@@ -10,13 +10,34 @@ export default function ProductsPage() {
   const [priceRange, setPriceRange] = useState("");
   const [sort, setSort] = useState("default");
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   const itemsPerPage = 6;
+
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/products`)
+    let url = `${process.env.NEXT_PUBLIC_API_URL}/products?page=${currentPage}&limit=${itemsPerPage}`;
+
+    if (category) {
+      url += `&category=${category}`;
+    }
+
+    if (priceRange) {
+      const [min, max] = priceRange.split("-");
+      if (min) url += `&minPrice=${min}`;
+      if (max) url += `&maxPrice=${max}`;
+    }
+
+    if (sort !== "default") {
+      url += `&sort=${sort}`;
+    }
+
+    fetch(url)
       .then((res) => res.json())
-      .then((data) => setProducts(data.products || []));
-  }, []);
+      .then((data) => {
+        setProducts(data.products || []);
+        setTotalPages(Math.ceil(data.total / data.limit));
+      });
+  }, [currentPage, category, priceRange, sort]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -31,10 +52,9 @@ export default function ProductsPage() {
     }
 
     const key = `cart_${user.id}`;
-
     let cart = JSON.parse(localStorage.getItem(key)) || [];
 
-    const existing = cart.find(item => item.id === product.id);
+    const existing = cart.find((item) => item.id === product.id);
 
     if (existing) {
       existing.quantity += 1;
@@ -46,31 +66,8 @@ export default function ProductsPage() {
     }
 
     localStorage.setItem(key, JSON.stringify(cart));
-
     alert("Added to cart!");
   };
-
- 
-  const filteredProducts = products
-    .filter((p) => (category ? p.category === category : true))
-    .filter((p) => {
-      if (!priceRange) return true;
-      const [min, max] = priceRange.split("-").map(Number);
-      return p.price >= min && p.price <= max;
-    })
-    .sort((a, b) => {
-      if (sort === "price-asc") return a.price - b.price;
-      if (sort === "price-desc") return b.price - a.price;
-      if (sort === "name-asc") return a.name.localeCompare(b.name);
-      return 0;
-    });
-
-
-  const start = (currentPage - 1) * itemsPerPage;
-  const end = start + itemsPerPage;
-  const paginatedProducts = filteredProducts.slice(start, end);
-
-  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
 
   return (
     <div>
@@ -99,37 +96,37 @@ export default function ProductsPage() {
         </select>
       </div>
 
-    
+
       <div className="product-grid">
-        {paginatedProducts.map((p) => (
+        {products.map((p) => (
           <div key={p.id} className="product-card">
             <ProductCard product={p} />
-
-            
           </div>
         ))}
       </div>
-      
-      <div className="pagination">
-        <button
-          disabled={currentPage === 1}
-          onClick={() => setCurrentPage(p => p - 1)}
-        >
-          Prev
-        </button>
 
-        <span>
-          Page {currentPage} / {totalPages}
-        </span>
 
-        <button
-          disabled={currentPage === totalPages}
-          onClick={() => setCurrentPage(p => p + 1)}
-        >
-          Next
-        </button>
-      </div>
+      {totalPages > 1 && (
+        <div className="pagination">
+          <button
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => p - 1)}
+          >
+            Prev
+          </button>
 
+          <span>
+            Page {currentPage} / {totalPages}
+          </span>
+
+          <button
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage((p) => p + 1)}
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
   );
 }

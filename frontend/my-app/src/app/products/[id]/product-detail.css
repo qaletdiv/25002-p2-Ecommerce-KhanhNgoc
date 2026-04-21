@@ -111,7 +111,16 @@
     font-weight: bold;
     font-size: 1rem;
   }
-  
+  .description {
+    margin-top: 12px;
+    color: #555;
+    font-size: 15px;
+    line-height: 1.7;
+    padding: 10px 12px;
+    background: #fafafa;
+    border-left: 3px solid #fcbaba;
+    border-radius: 6px;
+  }
   @media screen and (max-width: 800px) {
     .product-detail {
       flex-direction: column;

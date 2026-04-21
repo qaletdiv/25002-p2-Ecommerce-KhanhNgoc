@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import ProductCard from "./components/ProductCard";
+import "./products/shop.css"
 
 export default function HomePage() {
   const [products, setProducts] = useState([]);

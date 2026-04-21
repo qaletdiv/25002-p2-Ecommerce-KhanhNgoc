@@ -2,104 +2,64 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import "./confirm.css"; 
 
-
-
-export default function ConfirmPage() {
+export default function Page() {
   const router = useRouter();
-
-  const [user, setUser] = useState(null);
   const [order, setOrder] = useState(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const u = JSON.parse(localStorage.getItem("currentUser"));
-    const pending = JSON.parse(localStorage.getItem("pendingOrder"));
+    const stored = JSON.parse(localStorage.getItem("lastOrder"));
 
-    if (!u) {
-      router.push("/login");
+    if (!stored) {
+      router.push("/products");
       return;
     }
-    setUser(u);
-    setOrder(pending);
-    setLoading(false);
+
+    setOrder(stored);
   }, []);
 
-
-  const placeOrder = async () => {
-    if (!order) {
-      alert("No order found");
-      return;
-    }
-
-    try {
-      const res = await fetch("http://localhost:4000/api/orders", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId: user.id,        
-          items: order.items,
-          total: order.total,
-        }),
-      });
-
-      const data = await res.json();
-
-      console.log("RESPONSE:", data);
-
-      if (!res.ok) {
-        throw new Error(data.message || "Order failed");
-      }
-
-      
-      localStorage.removeItem("pendingOrder");
-      localStorage.removeItem(`cart_${user.id}`);
-
-      alert("Order placed successfully!");
-      router.push("/products");
-
-    } catch (err) {
-      console.error("ORDER ERROR:", err);
-      alert("Something went wrong");
-    }
-  };
-
-  if (loading) return <p>Loading...</p>;
-
-  if (!order) return <p>No order found</p>;
+  if (!order) return <p>Loading...</p>;
 
   return (
-    <main style={{ padding: 20 }}>
-      <h1>Confirm Order</h1>
-      <h3>User: {user?.name}</h3>
+    <main className="confirm-container">
+      <div className="confirm-card">
+        <h1> Order Successful!</h1>
 
-      <hr />
-
-      {order.items.map((item, i) => (
-        <div key={i}>
-          <p><b>{item.name}</b></p>
-          <p>Qty: {item.qty}</p>
-          <p>Price: ${item.price}</p>
-          <hr />
+        <div className="order-summary">
+          <h3>Shipping Info</h3>
+          <p><b>Name:</b> {order.fullname}</p>
+          <p><b>Phone:</b> {order.phone}</p>
+          <p><b>Address:</b> {order.address}</p>
         </div>
-      ))}
 
-      <h2>Total: ${order.total}</h2>
+        <div className="order-summary">
+          <h3>Items</h3>
+          {order.items.map((item, i) => (
+            <p key={i}>
+              {item.name} (x{item.qty}) - ${item.price}
+            </p>
+          ))}
+        </div>
 
-      <button
-        onClick={placeOrder}
-        style={{
-          padding: "10px 20px",
-          background: "#ff6b6b",
-          color: "white",
-          border: "none",
-          cursor: "pointer",
-        }}
-      >
-        Place Order
-      </button>
+        <div className="order-summary">
+          <h3>Total</h3>
+          <p><b>${order.total}</b></p>
+        </div>
+
+        <button
+          className="btn"
+          onClick={() => router.push("/products")}
+        >
+          Back to Shop
+        </button>
+        <button
+          className="btn"
+         onClick={() => router.push("/account")}
+        >
+           View Order History
+          </button>
+      </div>
     </main>
   );
 }

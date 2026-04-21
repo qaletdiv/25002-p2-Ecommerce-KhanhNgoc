@@ -34,7 +34,7 @@ export default function CartPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  
+
   const productMap = useMemo(() => {
     return Object.fromEntries(products.map(p => [p.id, p]));
   }, [products]);
@@ -49,7 +49,7 @@ export default function CartPage() {
     localStorage.setItem(`cart_${user.id}`, JSON.stringify(updated));
   };
 
-  
+
   const removeItem = (id) => {
     const updated = cart.filter(item => item.id !== id);
 
@@ -123,7 +123,7 @@ export default function CartPage() {
           <div className="cart-summary">
             <p>Total: ${total.toFixed(2)}</p>
 
-            <button onClick={() => router.push("/checkout")}>
+            <button id="checkout-btn" onClick={() => router.push("/checkout")}>
               Proceed to Checkout
             </button>
           </div>

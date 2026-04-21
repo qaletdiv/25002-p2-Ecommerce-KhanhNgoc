@@ -27,8 +27,8 @@
   color: #ff6b6b;
 }
 
-#shipping-form input,
-#shipping-form textarea {
+.shipping-box input,
+.shipping-box textarea {
   width: 100%;
   padding: 10px;
   margin-bottom: 15px;

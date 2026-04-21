@@ -5,9 +5,8 @@ import { useParams, useRouter } from "next/navigation";
 import "./product-detail.css";
 
 export default function ProductDetailPage() {
-  const { id } = useParams();  
+  const { id } = useParams();
   const router = useRouter();
-
   const [product, setProduct] = useState(null);
   const [related, setRelated] = useState([]);
 
@@ -19,7 +18,7 @@ export default function ProductDetailPage() {
         const data = await res.json();
         setProduct(data);
 
-       
+
         const allRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products?category=${data.category}`);
         const allData = await allRes.json();
         setRelated(
@@ -52,6 +51,7 @@ export default function ProductDetailPage() {
     else cart.push({ id: product.id, quantity: qty });
 
     localStorage.setItem(cartKey, JSON.stringify(cart));
+    window.dispatchEvent(new Event('cart-updated'));
     alert("Added to cart!");
   };
 
@@ -67,6 +67,10 @@ export default function ProductDetailPage() {
         <div className="product-info">
           <h1>{product.name}</h1>
           <p className="price">${product.price.toFixed(2)}</p>
+          <p className="description">
+  {product.description || "No description available."}
+</p>
+        
 
           <div className="quantity-select">
             <label htmlFor="quantity">Quantity:</label>

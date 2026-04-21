@@ -20,5 +20,5 @@ app.use("/api/users", usersRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/orders", ordersRoutes);
 app.listen(4000, () => {
-  console.log("✅\ Server running at http://localhost:4000");
+  console.log("\ Server running at http://localhost:4000");
 });

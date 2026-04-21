@@ -11,7 +11,7 @@ export default function CheckoutPage() {
   const [cart, setCart] = useState([]);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     const u = JSON.parse(localStorage.getItem("currentUser"));
@@ -29,26 +29,25 @@ export default function CheckoutPage() {
     setCart(storedCart);
 
     fetch("http://localhost:4000/api/products")
-      .then(res => res.json())
-      .then(data => setProducts(data.products || []))
+      .then((res) => res.json())
+      .then((data) => setProducts(data.products || []))
       .finally(() => setLoading(false));
   }, []);
-
 
   const getProduct = (id) =>
     products.find((p) => Number(p.id) === Number(id));
 
-
   const total = cart.reduce((sum, item) => {
     const product = getProduct(item.id);
     if (!product) return sum;
-
     return sum + product.price * (item.quantity || 1);
   }, 0);
 
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (submitting) return;
+    setSubmitting(true);
 
     const form = new FormData(e.target);
 
@@ -63,10 +62,8 @@ export default function CheckoutPage() {
       };
     });
 
-    const pendingOrder = {
-      orderId: "ORD" + Date.now(),
+    const orderData = {
       userId: user.id,
-      userEmail: user.email,
       items: orderItems,
       total,
       fullname: form.get("fullname"),
@@ -74,18 +71,38 @@ export default function CheckoutPage() {
       address: form.get("address"),
       date: new Date().toLocaleDateString(),
     };
-// khuc nay la tam thoi 
-    localStorage.setItem(
-      "pendingOrder",
-      JSON.stringify(pendingOrder)
-    );
 
-// sau do moi vo confirm page 
-    router.push("/confirm");
+    try {
+      const res = await fetch("http://localhost:4000/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(orderData),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || "Order failed");
+      }
+
+      localStorage.setItem("lastOrder", JSON.stringify(orderData));
+
+  
+      localStorage.removeItem(`cart_${user.id}`);
+
+    
+      router.push("/confirm");
+
+    } catch (err) {
+      console.error(err);
+      alert("Order failed");
+      setSubmitting(false);
+    }
   };
 
   if (loading) return <p>Loading checkout...</p>;
-
   if (cart.length === 0) return <p>Your cart is empty</p>;
 
   return (
@@ -93,7 +110,6 @@ export default function CheckoutPage() {
       <h1>Checkout</h1>
 
       <div className="checkout-wrapper">
-
         <section className="shipping-box">
           <h2>Shipping Information</h2>
 
@@ -102,8 +118,12 @@ export default function CheckoutPage() {
             <input name="phone" placeholder="Phone Number" required />
             <textarea name="address" placeholder="Address" required />
 
-            <button className="confirm-btn" type="submit">
-              Confirm Order
+            <button
+              className="confirm-btn"
+              type="submit"
+              disabled={submitting}
+            >
+              {submitting ? "Processing..." : "Place Order"}
             </button>
           </form>
         </section>
@@ -119,12 +139,8 @@ export default function CheckoutPage() {
 
             return (
               <div key={item.id} className="summary-item">
-                <span>
-                  {product.name} (x{qty})
-                </span>
-                <span>
-                  ${(product.price * qty).toFixed(2)}
-                </span>
+                <span>{product.name} (x{qty})</span>
+                <span>${(product.price * qty).toFixed(2)}</span>
               </div>
             );
           })}
@@ -134,7 +150,6 @@ export default function CheckoutPage() {
             <h3>${total.toFixed(2)}</h3>
           </div>
         </section>
-
       </div>
     </main>
   );

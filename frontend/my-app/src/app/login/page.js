@@ -1,11 +1,10 @@
 'use client';
-
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import "./login.css";
 
 export default function LoginPage() {
-  const router = useRouter()
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
@@ -17,24 +16,30 @@ export default function LoginPage() {
     setErrorMsg("");
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/users/login`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        }
+      );
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Login failed");
 
-      
+      // luu vao store
       localStorage.setItem("currentUser", JSON.stringify(data));
       localStorage.setItem("loggedIn", "true");
 
+      
+      //PHAI DE CHO NAV NGHE EVENT , SET STAE VI UI HOAT DONG DUA TREN STATE
+      window.dispatchEvent(new Event("auth"));
+
       alert(`Welcome back, ${data.name}!`);
-      router.push("/"); 
+      router.push("/");
     } catch (err) {
       setErrorMsg(err.message);
-      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -43,6 +48,7 @@ export default function LoginPage() {
   return (
     <main className="login-container">
       <h2>Login</h2>
+
       <form onSubmit={handleSubmit}>
         <input
           type="email"
@@ -51,6 +57,7 @@ export default function LoginPage() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
+
         <input
           type="password"
           placeholder="Password"
@@ -58,11 +65,14 @@ export default function LoginPage() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
+
         <button type="submit" disabled={loading}>
           {loading ? "Logging in..." : "Login"}
         </button>
       </form>
-      {errorMsg && <p style={{ color: "red", marginTop: "10px" }}>{errorMsg}</p>}
+
+      {errorMsg && <p style={{ color: "red" }}>{errorMsg}</p>}
+
       <p>
         No account?{" "}
         <a
@@ -70,10 +80,9 @@ export default function LoginPage() {
           style={{
             backgroundColor: "#fcbaba",
             color: "white",
-            padding: "10px 8px",
+            padding: "8px",
             borderRadius: "5px",
             textDecoration: "none",
-            fontWeight: 600,
           }}
         >
           Register
@@ -82,3 +91,5 @@ export default function LoginPage() {
     </main>
   );
 }
+
+
